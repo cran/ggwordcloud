@@ -2,12 +2,13 @@
 % Please edit documentation in R/geom-text-wordcloud.R
 \name{geom_text_wordcloud}
 \alias{geom_text_wordcloud}
-\title{Wordcloud text geom}
+\title{wordcloud text geom}
 \usage{
 geom_text_wordcloud(mapping = NULL, data = NULL, stat = "identity",
   position = "identity", ..., parse = FALSE, nudge_x = 0,
-  nudge_y = 0, eccentricity = 0.65, rstep = 0.01, tstep = 0.01,
-  grid_size = 8, xlim = c(NA, NA), ylim = c(NA, NA), seed = NA,
+  nudge_y = 0, eccentricity = 0.65, rstep = 0.01, tstep = 0.02,
+  grid_size = 4, max_grid_size = 128, grid_margin = 1, xlim = c(NA,
+  NA), ylim = c(NA, NA), seed = NA, rm_outside = FALSE,
   na.rm = FALSE, show.legend = FALSE, inherit.aes = TRUE)
 }
 \arguments{
@@ -46,10 +47,14 @@ starting position of each text label.}
 \item{rstep}{relative wordclould spiral radius increment after one full
 rotation. Default to .01.}
 
-\item{tstep}{wordclould spiral angle increment at each step. Default to .01.}
+\item{tstep}{wordclould spiral angle increment at each step. Default to .02.}
 
 \item{grid_size}{grid size used when creating the text bounding boxes.
-Default to 8}
+Default to 4}
+
+\item{max_grid_size}{maximum size of the bounding boxes. Default to 128}
+
+\item{grid_margin}{safety margin around the texts. Default to 1.}
 
 \item{xlim, ylim}{Limits for the x and y axes. Text labels will be constrained
 to these limits. By default, text labels are constrained to the entire plot
@@ -58,21 +63,25 @@ area.}
 \item{seed}{Random seed passed to \code{set.seed}. Defaults to \code{NA},
 which means that \code{set.seed} will not be called.}
 
+\item{rm_outside}{Remove the texts that could not be fitted. Default to
+\code{FALSE}}
+
 \item{na.rm}{Remove missing values if TRUE}
 
 \item{show.legend}{is set by default to \code{FALSE}}
 
 \item{inherit.aes}{Inherits aesthetics if TRUE}
 }
+\value{
+a ggplot
+}
 \description{
 \code{geom_text_wordcloud} adds text to the plot using a variation of the
-wordcloud2.js algorithm. The texts are layerd around a spiral centered on the
-original position.
-}
-\details{
-This geom is based on \code{\link[ggrepel]{geom_text_repel}} which in turn is
-based on \code{\link[ggplot2]{geom_text}}. See the documentation for those
-functions for more details.
+wordcloud2.js algorithm. The texts are layered around a spiral centered on
+the original position. This geom is based on
+\code{\link[ggrepel]{geom_text_repel}} which in turn is based on
+\code{\link[ggplot2]{geom_text}}. See the documentation for those functions
+for more details.
 }
 \examples{
 set.seed(42)

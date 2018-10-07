@@ -57,7 +57,8 @@ DataFrame wordcloud_boxes(
     IntegerMatrix text_boxes,
     NumericVector xlim, NumericVector ylim,
     double eccentricity = 0.65,
-    double rstep = 0.1, double tstep = 0.05) {
+    double rstep = 0.1, double tstep = 0.05,
+    bool rm_outside = false) {
 
   if (NumericVector::is_na(rstep)) {
     rstep = 0.1;
@@ -69,6 +70,8 @@ DataFrame wordcloud_boxes(
   int n_texts = text_boxes.nrow();
   int n_boxes = boxes.nrow();
 
+  std::vector<bool> text_inside(n_texts);
+
   int iter = 0;
   bool i_overlaps = true;
 
@@ -78,6 +81,12 @@ DataFrame wordcloud_boxes(
   xbounds.y = xlim[1];
   ybounds.x = ylim[0];
   ybounds.y = ylim[1];
+
+  Box inside;
+  inside.x1 = xlim[0];
+  inside.y1 = ylim[0];
+  inside.x2 = xlim[1];
+  inside.y2 = ylim[1];
 
 
   std::vector<Point> current_centroids(n_texts);
@@ -90,8 +99,8 @@ DataFrame wordcloud_boxes(
 
   Point d;
   double r;
-  double rscale = sqrt((xlim[1]-xlim[0])*(xlim[1]-xlim[0])+
-                       eccentricity*eccentricity*(ylim[1]-ylim[0])*(ylim[1]-ylim[0]));
+  double rscale = ((xlim[1]-xlim[0])*(xlim[1]-xlim[0])+
+                       (ylim[1]-ylim[0])*(ylim[1]-ylim[0])/(eccentricity * eccentricity));
   double theta;
 
   for (int i = 0; i < n_texts; i++) {
@@ -105,6 +114,7 @@ DataFrame wordcloud_boxes(
     Point PosOri = current_centroids[i];
     Point CurPos;
     Point corr;
+    text_inside[i] = false;
 
     // Try to position the current text box
     while (i_overlaps && r < rscale) {
@@ -112,39 +122,46 @@ DataFrame wordcloud_boxes(
       i_overlaps = false;
 
       CurPos = PosOri + d;
+      bool all_inside = true;
       for (int ii = text_boxes(i,0); ii < text_boxes(i,1); ii++) {
         TextBoxes[ii].x1 = CurPos.x + boxes(ii, 0);
         TextBoxes[ii].x2 = CurPos.x + boxes(ii, 2);
         TextBoxes[ii].y1 = CurPos.y + boxes(ii, 1);
         TextBoxes[ii].y2 = CurPos.y + boxes(ii, 3);
+        all_inside = all_inside && overlaps(TextBoxes[ii], inside);
       }
-      corr.x = 0;
-      corr.y = 0;
-      for (int ii = text_boxes(i,0); ii < text_boxes(i,1); ii++){
-        if (TextBoxes[ii].x1 < xbounds.x) {
-          corr.x = std::max(xbounds.x-TextBoxes[ii].x1,corr.x);
+
+      if (all_inside) {
+        corr.x = 0;
+        corr.y = 0;
+        for (int ii = text_boxes(i,0); ii < text_boxes(i,1); ii++){
+          if (TextBoxes[ii].x1 < xbounds.x) {
+            corr.x = std::max(xbounds.x-TextBoxes[ii].x1,corr.x);
+          }
+          if (TextBoxes[ii].x2 > xbounds.y) {
+            corr.x = std::min(xbounds.y-TextBoxes[ii].x2,corr.x);
+          }
+          if (TextBoxes[ii].y1 < ybounds.x) {
+            corr.y = std::max(ybounds.x-TextBoxes[ii].y1,corr.y);
+          }
+          if (TextBoxes[ii].y2 > ybounds.y) {
+            corr.y = std::min(ybounds.y-TextBoxes[ii].y2,corr.y);
+          }
         }
-        if (TextBoxes[ii].x2 > xbounds.y) {
-          corr.x = std::min(xbounds.y-TextBoxes[ii].x2,corr.x);
+        for (int ii = text_boxes(i,0); ii < text_boxes(i,1); ii++){
+          TextBoxes[ii] = TextBoxes[ii] + corr;
         }
-        if (TextBoxes[ii].y1 < ybounds.x) {
-          corr.y = std::max(ybounds.x-TextBoxes[ii].y1,corr.y);
-        }
-        if (TextBoxes[ii].y2 > ybounds.y) {
-          corr.y = std::min(ybounds.y-TextBoxes[ii].y2,corr.y);
-        }
-      }
-      for (int ii = text_boxes(i,0); ii < text_boxes(i,1); ii++){
-        TextBoxes[ii] = TextBoxes[ii] + corr;
-      }
-      CurPos = CurPos + corr;
+        CurPos = CurPos + corr;
 
 
-      for (int ii = text_boxes(i,0); (!i_overlaps) && (ii < text_boxes(i,1)); ii++){
-        for (int jj = 0 ; (!i_overlaps) && (jj < text_boxes(i,0)); jj++)
-        if (overlaps(TextBoxes[ii], TextBoxes[jj])) {
-          i_overlaps = true;
+        for (int ii = text_boxes(i,0); (!i_overlaps) && (ii < text_boxes(i,1)); ii++){
+          for (int jj = 0 ; (!i_overlaps) && (jj < text_boxes(i,0)); jj++)
+            if (overlaps(TextBoxes[ii], TextBoxes[jj])) {
+              i_overlaps = true;
+            }
         }
+      } else {
+        i_overlaps = true;
       }
 
       if (i_overlaps) {
@@ -154,6 +171,7 @@ DataFrame wordcloud_boxes(
         d.y    = r * sin(theta)*eccentricity;
       } else {
         current_centroids[i] = CurPos;
+        text_inside[i] = true;
       }
     } // loop over already positioned boxes
 
@@ -162,10 +180,34 @@ DataFrame wordcloud_boxes(
   NumericVector xs(n_texts);
   NumericVector ys(n_texts);
 
+  int nb_bad = 0;
   for (int i = 0; i < n_texts; i++) {
-    xs[i] = current_centroids[i].x;
-    ys[i] = current_centroids[i].y;
+    if (!text_inside[i]) { nb_bad++; }
+    if (text_inside[i]||!rm_outside) {
+      xs[i] = current_centroids[i].x;
+      ys[i] = current_centroids[i].y;
+    } else {
+      xs[i] = NA_REAL;
+      ys[i] = NA_REAL;
+    }
   }
+
+  if (nb_bad > 0) {
+    if (nb_bad == 1) {
+      if (rm_outside) {
+        Rcpp::warning("One word could not fit on page. It has been removed.");
+      } else {
+        Rcpp::warning("One word could not fit on page. It has been placed at its original position.");
+      }
+    } else {
+      if (rm_outside) {
+        Rcpp::warning("Some words could not fit on page. They have been removed.");
+      } else {
+        Rcpp::warning("Some words could not fit on page. They have been placed at their original positions.");
+      }
+    }
+  }
+
 
   return Rcpp::DataFrame::create(
     Rcpp::Named("x") = xs,
