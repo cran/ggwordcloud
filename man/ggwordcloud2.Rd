@@ -6,7 +6,8 @@
 \usage{
 ggwordcloud2(data, size = 1, color = "random-dark",
   minRotation = -pi/4, maxRotation = pi/4, shuffle = TRUE,
-  rotateRatio = 0.4, ellipticity = 0.65, ...)
+  rotateRatio = 0.4, shape = "circle", ellipticity = 0.65,
+  figPath = NA, ...)
 }
 \arguments{
 \item{data}{a dataframe whose two first columns are the names and the freqs
@@ -25,7 +26,11 @@ color of the size of the dataframe. Default to "random-dark"}
 
 \item{rotateRatio}{the proportion of rotated words}
 
+\item{shape}{control the shape of the cloud}
+
 \item{ellipticity}{control the eccentricity of the wordcloud}
+
+\item{figPath}{path to an image used a mask}
 
 \item{...}{the remaining parameters are passed to geom_text_wordcloud}
 }
@@ -41,10 +46,7 @@ similar to the ones one can obtain with \code{\link[wordcloud2]{wordcloud2}}.
 }
 \examples{
 set.seed(42)
-dat <- mtcars
-dat$name <- row.names(mtcars)
-dat$size <- dat$mpg
-dat$size[1] <- 300
+data("love_words_small")
 
-ggwordcloud2(dat[,c("name", "size")])
+ggwordcloud2(love_words_small[,c("word", "speakers")])
 }

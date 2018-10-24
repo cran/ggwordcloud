@@ -2,14 +2,28 @@
 % Please edit documentation in R/geom-text-wordcloud.R
 \name{geom_text_wordcloud}
 \alias{geom_text_wordcloud}
-\title{wordcloud text geom}
+\alias{geom_text_wordcloud_area}
+\title{word cloud text geoms}
 \usage{
 geom_text_wordcloud(mapping = NULL, data = NULL, stat = "identity",
   position = "identity", ..., parse = FALSE, nudge_x = 0,
   nudge_y = 0, eccentricity = 0.65, rstep = 0.01, tstep = 0.02,
-  grid_size = 4, max_grid_size = 128, grid_margin = 1, xlim = c(NA,
-  NA), ylim = c(NA, NA), seed = NA, rm_outside = FALSE,
-  na.rm = FALSE, show.legend = FALSE, inherit.aes = TRUE)
+  perc_step = 0.01, max_steps = 10, grid_size = 4,
+  max_grid_size = 128, grid_margin = 1, xlim = c(NA, NA),
+  ylim = c(NA, NA), seed = NA, rm_outside = FALSE,
+  shape = "circle", mask = NA, area_corr = FALSE,
+  area_corr_power = 1/0.7, na.rm = FALSE, show.legend = FALSE,
+  inherit.aes = TRUE)
+
+geom_text_wordcloud_area(mapping = NULL, data = NULL,
+  stat = "identity", position = "identity", ..., parse = FALSE,
+  nudge_x = 0, nudge_y = 0, eccentricity = 0.65, rstep = 0.01,
+  tstep = 0.02, perc_step = 0.01, max_steps = 10, grid_size = 4,
+  max_grid_size = 128, grid_margin = 1, xlim = c(NA, NA),
+  ylim = c(NA, NA), seed = NA, rm_outside = FALSE,
+  shape = "circle", mask = NA, area_corr = TRUE,
+  area_corr_power = 1/0.7, na.rm = FALSE, show.legend = FALSE,
+  inherit.aes = TRUE)
 }
 \arguments{
 \item{mapping}{Set of aesthetic mappings created by
@@ -18,7 +32,9 @@ geom_text_wordcloud(mapping = NULL, data = NULL, stat = "identity",
 mapping at the top level of the plot. You only need to supply
 \code{mapping} if there isn't a mapping defined for the plot. Note that if
 not specified both x and y are set to 0.5, i.e. the middle of the default
-panel.}
+panel. Two non classic aesthetics are defined \code{angle_group} and
+\code{mask_group} which define groups used respectively to use different
+angular sector and different masks in the word cloud.}
 
 \item{data}{A data frame. If specified, overrides the default data frame
 defined at the top level of the plot.}
@@ -49,6 +65,12 @@ rotation. Default to .01.}
 
 \item{tstep}{wordclould spiral angle increment at each step. Default to .02.}
 
+\item{perc_step}{parameter used to define the minimal distance between two
+successive candidate positions on the ellipse. Default to .01}
+
+\item{max_steps}{maximum number of steps avoided thanks to this minimal
+criterion. Default to 10. Set to 1 to recover the previous behavior}
+
 \item{grid_size}{grid size used when creating the text bounding boxes.
 Default to 4}
 
@@ -66,6 +88,26 @@ which means that \code{set.seed} will not be called.}
 \item{rm_outside}{Remove the texts that could not be fitted. Default to
 \code{FALSE}}
 
+\item{shape}{select the shape of the clouds among \code{circle},
+\code{cardioid}, \code{diamond}, \code{square}, \code{triangle-forward},
+\code{triangle-upright}, \code{pentagon}, \code{star}. Default to
+\code{circle}}
+
+\item{mask}{a mask (or a list of masks) used to define a zone in which the
+text should be placed. Each mask should be coercible to a raster in which
+the color "black" defined the text zone. When a list of masks is given, the
+mask_group aesthetic defines which mask is going to be used. Default to
+\code{NA}, i.e. no mask.}
+
+\item{area_corr}{Set the font size so that the area is proportional to size
+aesthetic raised to a certain power when the scale_size_area is used. As
+this is not the classical choice, the default is \code{FALSE} so that, by
+default, the length of the text is not taken into account.
+\code{geom_text_wordcloud_area} set this to \code{TRUE} by default.}
+
+\item{area_corr_power}{the power used in the area correction. Default to 1/.7
+to match human perception.}
+
 \item{na.rm}{Remove missing values if TRUE}
 
 \item{show.legend}{is set by default to \code{FALSE}}
@@ -81,17 +123,22 @@ wordcloud2.js algorithm. The texts are layered around a spiral centered on
 the original position. This geom is based on
 \code{\link[ggrepel]{geom_text_repel}} which in turn is based on
 \code{\link[ggplot2]{geom_text}}. See the documentation for those functions
-for more details.
+for more details. By default, the font size is directly related to the size
+aesthetic. \code{geom_text_wordcloud_area} is an alias, with a different set
+of default, that chooses a font size so that the area of the text is now
+related to the size aesthetic.
 }
 \examples{
 set.seed(42)
-dat <- mtcars
-dat$name <- row.names(mtcars)
-dat$size <- dat$mpg
-dat$size[1] <- 300
-ggplot(data = dat, aes(size = size, label = name)) + geom_text_wordcloud() +
-  theme_minimal()
-dat$angle <- (-90+180*runif(nrow(dat)))*(runif(nrow(dat)>.6))
-ggplot(data = dat, aes(size = size, label = name, angle = angle)) +
- geom_text_wordcloud() + theme_minimal()
+data("love_words_small")
+
+ggplot(love_words_small, aes(label = word, size = speakers)) +
+geom_text_wordcloud() +
+scale_size_area(max_size = 20) +
+theme_minimal()
+
+ggplot(love_words_small, aes(label = word, size = speakers)) +
+geom_text_wordcloud_area() +
+scale_size_area(max_size = 20) +
+theme_minimal()
 }

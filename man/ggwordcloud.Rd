@@ -47,10 +47,7 @@ with \code{\link[wordcloud]{wordcloud}}.
 }
 \examples{
 set.seed(42)
-dat <- mtcars
-dat$name <- row.names(mtcars)
-dat$size <- dat$mpg
-dat$size[1] <- 300
+data("love_words_small")
 
-ggwordcloud(dat$name, dat$size)
+ggwordcloud(love_words_small$word, love_words_small$speakers)
 }
