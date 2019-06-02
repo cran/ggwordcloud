@@ -42,9 +42,9 @@
 #'   to these limits. By default, text labels are constrained to the entire plot
 #'   area.
 #' @param eccentricity eccentricity of the spiral. Default to .65
-#' @param rstep relative wordclould spiral radius increment after one full
+#' @param rstep relative wordcloud spiral radius increment after one full
 #'   rotation. Default to .01.
-#' @param tstep wordclould spiral angle increment at each step. Default to .02.
+#' @param tstep wordcloud spiral angle increment at each step. Default to .02.
 #' @param perc_step parameter used to define the minimal distance between two
 #'   successive candidate positions on the ellipse. Default to .01
 #' @param max_steps maximum number of steps avoided thanks to this minimal
@@ -611,7 +611,7 @@ compute_newsize <- function(i, data, dev_dpi, area_corr_power) {
 
   # Compute the text mask
   mask <- compute_mask(tg_inch, gw_pix, gh_pix, dev_dpi,
-                       function(img) { apply(img, c(1,2), sum) != 3 })
+                       function(img) { rowSums(img, dims = 2) != 3 })
   area <- sum(mask)
   if (area > 0) {
     row$size^(area_corr_power) / sqrt(area)
@@ -639,11 +639,11 @@ compute_mask_boxes <- function(mask_matrix, dev_dpi, grid_size, max_grid_size, g
   # Compute the mask mask
   mask <- compute_mask(
     mask_raster, gw_pix, gh_pix, dev_dpi,
-    function(img) { apply(img, c(1,2), sum) != 0 }
+    function(img) { rowSums(img, dims = 2) != 0 }
   )
 
   compute_boxes_from_mask(
-    mask, gw_pix, gh_pix, gw_ratio, gh_ratio,
+    mask, gw_ratio, gh_ratio,
     grid_size, max_grid_size,
     0, 0, 0
   )
@@ -698,17 +698,21 @@ compute_text_boxes <- function(i, x, dev_dpi, grid_size, max_grid_size, grid_mar
   # Compute the text mask
   mask <- compute_mask(
     tg_inch, gw_pix, gh_pix, dev_dpi,
-    function(img) { apply(img, c(1,2), sum) != 3 }
+    function(img) { rowSums(img, dims = 2) != 3 }
   )
 
   compute_boxes_from_mask(
-    mask, gw_pix, gh_pix, gw_ratio, gh_ratio,
+    mask, gw_ratio, gh_ratio,
     grid_size, max_grid_size,
     grid_margin, gw_pix / 2, gh_pix / 2
   )
 }
 
-compute_boxes_from_mask <- function(mask, gw_pix, gh_pix, gw_ratio, gh_ratio, grid_size, max_grid_size, grid_margin, delta_w, delta_h) {
+compute_boxes_from_mask <- function(mask, gw_ratio, gh_ratio, grid_size, max_grid_size, grid_margin, delta_w, delta_h) {
+  dim_mask <- dim(mask)
+  gw_pix <- dim_mask[2]
+  gh_pix <- dim_mask[1]
+
   max_grid_w <- ceiling(gw_pix / grid_size) * grid_size
   max_grid_h <- ceiling(gh_pix / grid_size) * grid_size
   seq_grid_w <- seq.int(1, max_grid_w, grid_size)
@@ -716,29 +720,34 @@ compute_boxes_from_mask <- function(mask, gw_pix, gh_pix, gw_ratio, gh_ratio, gr
 
   mask_lists <- array(0, c(0, 4))
 
-  mask_s <- mask[seq_grid_h, seq_grid_w, drop = FALSE]
+  mask_s <- mask[pmin.int(pmax.int(1,seq_grid_h), gh_pix),
+                 pmin.int(pmax.int(1,seq_grid_w), gw_pix),
+                 drop = FALSE]
 
   for (j in (-grid_margin):(grid_size + grid_margin - 1)) {
     for (i in (-grid_margin):(grid_size + grid_margin - 1)) {
       mask_s <- mask_s | mask[
-        pmin(pmax(1, -j + seq_grid_h), gh_pix),
-        pmin(pmax(1, i + seq_grid_w), gw_pix),
+        pmin.int(pmax.int(1, -j + seq_grid_h), gh_pix),
+        pmin.int(pmax.int(1, i + seq_grid_w), gw_pix),
         drop = FALSE
       ]
     }
   }
   cur_mask <- mask_s
+  nrow_cur_mask <- nrow(cur_mask)
+  ncol_cur_mask <- ncol(cur_mask)
 
   step <- 2^c(0:max(0, floor(log2(max_grid_size / grid_size))))
 
   for (st in step) {
     if (st != max(step)) {
-      next_mask <- cur_mask[seq(1, nrow(cur_mask), 2), seq(1, ncol(cur_mask), 2), drop = FALSE]
+      next_mask <- cur_mask[seq.int(1, nrow_cur_mask, 2),
+                            seq.int(1, ncol_cur_mask, 2), drop = FALSE]
       for (j in 0:1) {
         for (i in 0:1) {
           next_mask <- next_mask &
-            cur_mask[pmin(pmax(1, i + seq(1, nrow(cur_mask), 2)), nrow(cur_mask)),
-              pmin(pmax(1, j + seq(1, ncol(cur_mask), 2)), ncol(cur_mask)),
+            cur_mask[pmin.int(pmax.int(1, i + seq.int(1, nrow_cur_mask, 2)), nrow_cur_mask),
+              pmin.int(pmax.int(1, j + seq.int(1, ncol_cur_mask, 2)), ncol_cur_mask),
               drop = FALSE
             ]
         }
@@ -748,8 +757,8 @@ compute_boxes_from_mask <- function(mask, gw_pix, gh_pix, gw_ratio, gh_ratio, gr
       if (length(mask_ind) > 0) {
         for (ind in 1:nrow(mask_ind)) {
           cur_mask[
-            pmin(pmax(1, 2 * (mask_ind[ind, 1] - 1) + (1:2)), nrow(cur_mask)),
-            pmin(pmax(1, 2 * (mask_ind[ind, 2] - 1) + (1:2)), ncol(cur_mask))
+            pmin.int(pmax.int(1, 2 * (mask_ind[ind, 1] - 1) + (1:2)), nrow_cur_mask),
+            pmin.int(pmax.int(1, 2 * (mask_ind[ind, 2] - 1) + (1:2)), ncol_cur_mask)
           ] <- FALSE
         }
       }
@@ -767,6 +776,8 @@ compute_boxes_from_mask <- function(mask, gw_pix, gh_pix, gw_ratio, gh_ratio, gr
 
     if (st != max(step)) {
       cur_mask <- next_mask
+      nrow_cur_mask <- nrow(cur_mask)
+      ncol_cur_mask <- ncol(cur_mask)
     }
   }
 
