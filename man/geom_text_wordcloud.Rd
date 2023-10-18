@@ -5,25 +5,67 @@
 \alias{geom_text_wordcloud_area}
 \title{word cloud text geoms}
 \usage{
-geom_text_wordcloud(mapping = NULL, data = NULL, stat = "identity",
-  position = "identity", ..., parse = FALSE, nudge_x = 0,
-  nudge_y = 0, eccentricity = 0.65, rstep = 0.01, tstep = 0.02,
-  perc_step = 0.01, max_steps = 10, grid_size = 4,
-  max_grid_size = 128, grid_margin = 1, xlim = c(NA, NA),
-  ylim = c(NA, NA), seed = NA, rm_outside = FALSE,
-  shape = "circle", mask = NA, area_corr = FALSE,
-  area_corr_power = 1/0.7, na.rm = FALSE, show.legend = FALSE,
-  inherit.aes = TRUE, show_boxes = FALSE)
+geom_text_wordcloud(
+  mapping = NULL,
+  data = NULL,
+  stat = "identity",
+  position = "identity",
+  ...,
+  parse = FALSE,
+  nudge_x = 0,
+  nudge_y = 0,
+  eccentricity = 0.65,
+  rstep = 0.01,
+  tstep = 0.02,
+  perc_step = 0.01,
+  max_steps = 10,
+  grid_size = 4,
+  max_grid_size = 128,
+  grid_margin = 1,
+  xlim = c(NA, NA),
+  ylim = c(NA, NA),
+  seed = NA,
+  rm_outside = FALSE,
+  shape = "circle",
+  mask = NA,
+  area_corr = FALSE,
+  na.rm = FALSE,
+  show.legend = FALSE,
+  inherit.aes = TRUE,
+  show_boxes = FALSE,
+  use_richtext = TRUE
+)
 
-geom_text_wordcloud_area(mapping = NULL, data = NULL,
-  stat = "identity", position = "identity", ..., parse = FALSE,
-  nudge_x = 0, nudge_y = 0, eccentricity = 0.65, rstep = 0.01,
-  tstep = 0.02, perc_step = 0.01, max_steps = 10, grid_size = 4,
-  max_grid_size = 128, grid_margin = 1, xlim = c(NA, NA),
-  ylim = c(NA, NA), seed = NA, rm_outside = FALSE,
-  shape = "circle", mask = NA, area_corr = TRUE,
-  area_corr_power = 1/0.7, na.rm = FALSE, show.legend = FALSE,
-  inherit.aes = TRUE, show_boxes = FALSE)
+geom_text_wordcloud_area(
+  mapping = NULL,
+  data = NULL,
+  stat = "identity",
+  position = "identity",
+  ...,
+  parse = FALSE,
+  nudge_x = 0,
+  nudge_y = 0,
+  eccentricity = 0.65,
+  rstep = 0.01,
+  tstep = 0.02,
+  perc_step = 0.01,
+  max_steps = 10,
+  grid_size = 4,
+  max_grid_size = 128,
+  grid_margin = 1,
+  xlim = c(NA, NA),
+  ylim = c(NA, NA),
+  seed = NA,
+  rm_outside = FALSE,
+  shape = "circle",
+  mask = NA,
+  area_corr = TRUE,
+  na.rm = FALSE,
+  show.legend = FALSE,
+  inherit.aes = TRUE,
+  show_boxes = FALSE,
+  use_richtext = TRUE
+)
 }
 \arguments{
 \item{mapping}{Set of aesthetic mappings created by
@@ -95,18 +137,15 @@ which means that \code{set.seed} will not be called.}
 
 \item{mask}{a mask (or a list of masks) used to define a zone in which the
 text should be placed. Each mask should be coercible to a raster in which
-the color "black" defined the text zone. When a list of masks is given, the
+non full transparency defined the text zone. When a list of masks is given, the
 mask_group aesthetic defines which mask is going to be used. Default to
 \code{NA}, i.e. no mask.}
 
 \item{area_corr}{Set the font size so that the area is proportional to size
-aesthetic raised to a certain power when the scale_size_area is used. As
+aesthetic  when the scale_size_area is used. As
 this is not the classical choice, the default is \code{FALSE} so that, by
 default, the length of the text is not taken into account.
 \code{geom_text_wordcloud_area} set this to \code{TRUE} by default.}
-
-\item{area_corr_power}{the power used in the area correction. Default to 1/.7
-to match human perception.}
 
 \item{na.rm}{Remove missing values if TRUE}
 
@@ -116,31 +155,35 @@ to match human perception.}
 
 \item{show_boxes}{display the bounding boxes used in the placement algorithm is set
 to \code{TRUE}. Default to \code{FALSE}.}
+
+\item{use_richtext}{use the enhanced gridtext text grob instead of the grid one. Allow to
+use markdown/html syntax in label. Default to \code{TRUE}.}
 }
 \value{
 a ggplot
 }
 \description{
 \code{geom_text_wordcloud} adds text to the plot using a variation of the
-wordcloud2.js algorithm. The texts are layered around a spiral centered on
+wordcloud2.js algorithm. The texts are layered around a spiral centred on
 the original position. This geom is based on
 \code{\link[ggrepel]{geom_text_repel}} which in turn is based on
 \code{\link[ggplot2]{geom_text}}. See the documentation for those functions
-for more details. By default, the font size is directly related to the size
+for more details. By default, the font size is directly linked to the size
 aesthetic. \code{geom_text_wordcloud_area} is an alias, with a different set
-of default, that chooses a font size so that the area of the text is now
-related to the size aesthetic.
+of default, that chooses a font size so that the area of the text given by the label
+aesthetic is linked to the size aesthetic. You can also specify a label_content aesthetic
+that overrides the label after its has been used to choose the font size.
 }
 \examples{
 set.seed(42)
-data("love_words_small")
+data("love_words_latin_small")
 
-ggplot(love_words_small, aes(label = word, size = speakers)) +
+ggplot(love_words_latin_small, aes(label = word, size = speakers)) +
 geom_text_wordcloud() +
 scale_size_area(max_size = 20) +
 theme_minimal()
 
-ggplot(love_words_small, aes(label = word, size = speakers)) +
+ggplot(love_words_latin_small, aes(label = word, size = speakers)) +
 geom_text_wordcloud_area() +
 scale_size_area(max_size = 20) +
 theme_minimal()

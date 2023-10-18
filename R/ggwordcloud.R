@@ -21,4 +21,6 @@
 #'   HLS
 #' @importFrom stats runif
 #' @importFrom png readPNG
+#' @importFrom scales trans_new
+#' @importFrom gridtext richtext_grob
 NULL
