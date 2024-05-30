@@ -7,4 +7,22 @@
 \description{
 A wordcloud package for ggplot2
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/lepennec/ggwordcloud}
+  \item \url{https://lepennec.github.io/ggwordcloud/}
+  \item Report bugs at \url{https://github.com/lepennec/ggwordcloud/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Erwan Le Pennec \email{lepennec@gmail.com}
+
+Authors:
+\itemize{
+  \item Kamil Slowikowski \email{kslowikowski@gmail.com}
+}
+
+}
 \keyword{internal}

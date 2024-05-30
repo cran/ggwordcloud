@@ -1,7 +1,7 @@
 Type: Package
 Package: ggwordcloud
 Title: A Word Cloud Geom for 'ggplot2'
-Version: 0.6.1
+Version: 0.6.2
 Authors@R: 
     c(person(given = "Erwan",
              family = "Le Pennec",
@@ -23,14 +23,14 @@ Suggests: testthat (>= 2.0.0), knitr, rmarkdown, ggrepel, wordcloud,
 LinkingTo: Rcpp
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 VignetteBuilder: knitr
 URL: https://github.com/lepennec/ggwordcloud,
         https://lepennec.github.io/ggwordcloud/
 BugReports: https://github.com/lepennec/ggwordcloud/issues
 NeedsCompilation: yes
-Packaged: 2023-10-26 12:22:08 UTC; lepen
+Packaged: 2024-05-30 09:10:28 UTC; lepen
 Author: Erwan Le Pennec [aut, cre],
   Kamil Slowikowski [aut]
 Repository: CRAN
-Date/Publication: 2023-10-26 13:00:02 UTC
+Date/Publication: 2024-05-30 15:30:05 UTC

@@ -270,7 +270,7 @@ GeomTextWordcloud <- ggproto("GeomTextWordcloud", Geom,
                                colour = "black", size = 3.88, angle = 0, hjust = 0.5,
                                vjust = 0.5, alpha = NA, family = "", fontface = 1,
                                lineheight = 1.2, mask_group = 1L, angle_group = 1L,
-                               label_content = NA
+                               label_content = NULL
                              ),
 
                              setup_data = function(data, params) {
@@ -423,7 +423,7 @@ makeContent.textwordcloudtree <- function(x) {
     boxes_masks_nb <- vector("integer")
     mask_boxes <- array(0, dim = c(0, 2))
     boxes_mask <- vector("integer")
-    boxes_masks <- array(0, dim = c(1, 4))
+    boxes_masks <- array(0, dim = c(0, 4))
     mask_group <- rep(0L, length(valid_strings))
   }
 
